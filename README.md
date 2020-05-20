@@ -13,15 +13,18 @@
 
 ## How to use
 
-	* Install requirements
+* Install requirements
+	
 ```
-	$ pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
-	* Run using
+
+* Run using
 
 ```
-	$ python ytomp3.py
+$ python ytomp3.py
 ```
+
 * Paste link to the video(Right clicking is disabled. Use ctrl+v instead)
 * Chose where to save your file
 * Click Download
