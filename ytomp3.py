@@ -69,6 +69,10 @@ class GUI():
             messagebox.showinfo(title='Success', message=f'Finished downloading\n{self.title}.mp3')
         except:
             messagebox.showerror(title='Server Error', message='\n    please try again    \n')
+            try:
+                os.remove(os.path.join(self.dir, self.inname))
+            except:
+                pass
         
         
 if __name__ == '__main__':
