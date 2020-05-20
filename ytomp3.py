@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox, ttk
 from moviepy.editor import *
 from typing import Optional
 import os
@@ -31,8 +31,12 @@ class GUI():
         self.brws_button.place(x=580, y=85)
         
         '''Download button'''
-        self.down_button = Button(self.window, text='Download', command=self.pressed)
+        self.down_button = Button(self.window, text='Download', command=pressed)
         self.down_button.place(x=40, y=150)
+        
+        self.progress = ttk.Progressbar(self.window, orient = HORIZONTAL, length = 120)
+        self.progress.pack()
+        self.progress.config(mode='indeterminate')
         
         self.window.mainloop()
         
@@ -59,6 +63,8 @@ class GUI():
         os.remove(os.path.join(self.dir, self.inname))
         
     def pressed(self):
+        self.progress.start()
+        
         self.url = self.url_entry.get()
         self.dir = str(self.path_entry.get())
         self.title = pytube.YouTube(self.url).title.replace('.', '')
@@ -67,8 +73,10 @@ class GUI():
             self.download(self.url, self.dir)
             self.convert(f"{self.title}.mp4",f"{self.title}.mp3", self.dir)
             messagebox.showinfo(title='Success', message=f'Finished downloading\n{self.title}.mp3')
+            self.progress.stop()
         except:
             messagebox.showerror(title='Server Error', message='\n    please try again    \n')
+            self.progress.stop()
             try:
                 os.remove(os.path.join(self.dir, self.inname))
             except:
