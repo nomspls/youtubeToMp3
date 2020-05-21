@@ -4,6 +4,7 @@ from moviepy.editor import *
 from typing import Optional
 import os
 import pytube
+import threading
 
 class GUI():
     def __init__(self):
@@ -31,11 +32,11 @@ class GUI():
         self.brws_button.place(x=580, y=85)
         
         '''Download button'''
-        self.down_button = Button(self.window, text='Download', command=pressed)
+        self.down_button = Button(self.window, text='Download', command=self.pressed)
         self.down_button.place(x=40, y=150)
         
         self.progress = ttk.Progressbar(self.window, orient = HORIZONTAL, length = 120)
-        self.progress.pack()
+        self.progress.pack(side=BOTTOM, fill=X)
         self.progress.config(mode='indeterminate')
         
         self.window.mainloop()
@@ -45,43 +46,44 @@ class GUI():
         self.filename = filedialog.askdirectory()
         self.folder_path.set(self.filename)
         
-    def download(self, link, path:Optional[str]=None):
+    def download(self, link, pathh:Optional[str]=None):
         self.link = link
-        self.path = path
+        self.pathh = pathh
         self.video = pytube.YouTube(self.link)
 
-        if self.path != None:
-            self.video.streams.get_audio_only().download(output_path=self.path)
+        if self.pathh != None:
+            self.video.streams.get_audio_only().download(output_path=self.pathh)
         else: self.video.streams.get_audio_only().download()
         
-    def convert(self, inname, outname, path:Optional[str]=os.getcwd()):
+    def convert(self, inname, outname, pathh:Optional[str]=os.getcwd()):
         self.inname = inname
-        self.path = path
+        self.pathh = pathh
         self.outname = outname
-        self.video = AudioFileClip(os.path.join(self.path, self.inname))
-        self.video.write_audiofile(os.path.join(self.path, self.outname))
+        self.video = AudioFileClip(os.path.join(self.pathh, self.inname))
+        self.video.write_audiofile(os.path.join(self.pathh, self.outname))
         os.remove(os.path.join(self.dir, self.inname))
         
     def pressed(self):
         self.progress.start()
         
-        self.url = self.url_entry.get()
-        self.dir = str(self.path_entry.get())
-        self.title = pytube.YouTube(self.url).title.replace('.', '')
-        try:
-            
-            self.download(self.url, self.dir)
-            self.convert(f"{self.title}.mp4",f"{self.title}.mp3", self.dir)
-            messagebox.showinfo(title='Success', message=f'Finished downloading\n{self.title}.mp3')
-            self.progress.stop()
-        except:
-            messagebox.showerror(title='Server Error', message='\n    please try again    \n')
-            self.progress.stop()
+        def callback():
+
+            self.url = self.url_entry.get()
+            self.dir = str(self.path_entry.get())
+            self.title = pytube.YouTube(self.url).title.replace('.', '')
             try:
-                os.remove(os.path.join(self.dir, self.inname))
+                self.download(self.url, self.dir)
+                self.convert(f"{self.title}.mp4",f"{self.title}.mp3", self.dir)
+                self.progress.stop()
+                messagebox.showinfo(title='Success', message=f'Download complete!\n{self.title}.mp3')
             except:
-                pass
-        
+                self.progress.stop()
+                messagebox.showerror(title='Server Error', message='\n    please try again    \n')
+                if os.path.exists(os.path.join(self.pathh, self.inname)):
+                    os.remove(os.path.join(self.dir, self.inname))
+                
+        self.t = threading.Thread(target=callback)
+        self.t.start()
         
 if __name__ == '__main__':
     GUI()
