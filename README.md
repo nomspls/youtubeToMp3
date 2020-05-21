@@ -4,7 +4,7 @@
 * Has a minimal GUI
 * Simple to use
 
-![](img.png)
+![](demo.gif)
 
 ## Dependancies
 
