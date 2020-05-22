@@ -2,9 +2,7 @@ from tkinter import *
 from tkinter import filedialog, messagebox, ttk
 from moviepy.editor import *
 from typing import Optional
-import os
-import pytube
-import threading
+import os, pytube, threading, string
 
 class GUI():
     def __init__(self):
@@ -65,14 +63,13 @@ class GUI():
         
     def pressed(self):
         self.progress.start()
-        
         def callback():
-
-            self.url = self.url_entry.get()
-            self.dir = str(self.path_entry.get())
-            self.title = pytube.YouTube(self.url).title.replace('.', '')
+            self.urll = self.url_entry.get()
+            self.dir = str(self.path_entry.get())        
+            self.title = ''.join(filter((string.ascii_letters + string.digits + ")(_- !?&").__contains__,
+                                            pytube.YouTube(self.urll).title))
             try:
-                self.download(self.url, self.dir)
+                self.download(self.urll, self.dir)
                 self.convert(f"{self.title}.mp4",f"{self.title}.mp3", self.dir)
                 self.progress.stop()
                 messagebox.showinfo(title='Success', message=f'Download complete!\n{self.title}.mp3')
@@ -81,24 +78,10 @@ class GUI():
                 messagebox.showerror(title='Server Error', message='\n    please try again    \n')
                 if os.path.exists(os.path.join(self.pathh, self.inname)):
                     os.remove(os.path.join(self.dir, self.inname))
-                
+
         self.t = threading.Thread(target=callback)
         self.t.start()
+
         
 if __name__ == '__main__':
     GUI()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
