@@ -64,10 +64,14 @@ class GUI():
     def pressed(self):
         self.progress.start()
         def callback():
-            self.urll = self.url_entry.get()
-            self.dir = str(self.path_entry.get())        
-            self.title = ''.join(filter((string.ascii_letters + string.digits + ")(_- !?&").__contains__,
-                                            pytube.YouTube(self.urll).title))
+            try:
+                self.urll = self.url_entry.get()
+                self.dir = str(self.path_entry.get())        
+                self.title = ''.join(filter((string.ascii_letters + string.digits + ")(_- !?&").__contains__,
+                                                pytube.YouTube(self.urll).title))
+            except:
+                self.progress.stop()
+                messagebox.showerror(title='Error', message='Broken link provided')
             try:
                 self.download(self.urll, self.dir)
                 self.convert(f"{self.title}.mp4",f"{self.title}.mp3", self.dir)
