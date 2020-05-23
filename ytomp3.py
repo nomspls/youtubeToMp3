@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog, messagebox, ttk
 from moviepy.editor import *
 from typing import Optional
-import os, pytube, threading, string
+import os, pytube, threading, string, re
 
 class GUI():
     def __init__(self):
@@ -33,9 +33,9 @@ class GUI():
         self.down_button = Button(self.window, text='Download', command=self.pressed)
         self.down_button.place(x=40, y=150)
         
-        self.progress = ttk.Progressbar(self.window, orient = HORIZONTAL, length = 120)
+        self.progress = ttk.Progressbar(self.window, orient = HORIZONTAL)
         self.progress.pack(side=BOTTOM, fill=X)
-        self.progress.config(mode='indeterminate')
+        # self.progress.config(mode='indeterminate')
         
         self.window.mainloop()
         
@@ -67,8 +67,9 @@ class GUI():
             try:
                 self.urll = self.url_entry.get()
                 self.dir = str(self.path_entry.get())        
-                self.title = ''.join(filter((string.ascii_letters + string.digits + ")(_- !?&").__contains__,
-                                                pytube.YouTube(self.urll).title))
+                self.title = ''.join(filter((string.ascii_letters + string.digits + "-_ ][)(&!?><+").__contains__,
+                                             pytube.YouTube(self.urll).title))
+                print(self.title)
             except:
                 self.progress.stop()
                 messagebox.showerror(title='Error', message='Broken link provided')
