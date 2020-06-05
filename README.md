@@ -8,8 +8,7 @@
 
 ## Dependancies
 
-* moviepy
-* pytube
+* youtube-dl
 
 ## How to use
 

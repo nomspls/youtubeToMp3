@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
-from moviepy.editor import *
 from typing import Optional
-import os, pytube, threading, string, re
+import threading
+from subprocess import run
 
 class GUI():
     def __init__(self):
@@ -35,7 +35,6 @@ class GUI():
         
         self.progress = ttk.Progressbar(self.window, orient = HORIZONTAL)
         self.progress.pack(side=BOTTOM, fill=X)
-        # self.progress.config(mode='indeterminate')
         
         self.window.mainloop()
         
@@ -44,45 +43,36 @@ class GUI():
         self.filename = filedialog.askdirectory()
         self.folder_path.set(self.filename)
         
-    def download(self, link, pathh:Optional[str]=None):
+    def download(self, link, path:Optional[str]=None):
         self.link = link
-        self.pathh = pathh
-        self.video = pytube.YouTube(self.link)
-
-        if self.pathh != None:
-            self.video.streams.get_audio_only().download(output_path=self.pathh)
-        else: self.video.streams.get_audio_only().download()
+        self.path = path
         
-    def convert(self, inname, outname, pathh:Optional[str]=os.getcwd()):
-        self.inname = inname
-        self.pathh = pathh
-        self.outname = outname
-        self.video = AudioFileClip(os.path.join(self.pathh, self.inname))
-        self.video.write_audiofile(os.path.join(self.pathh, self.outname))
-        os.remove(os.path.join(self.dir, self.inname))
-        
+        if self.path != None:
+            run(f'youtube-dl --prefer-ffmpeg -o "{self.path}/%(title)s.%(ext)s" --extract-audio --audio-format mp3 {self.link}',
+                 shell=True, capture_output=True, text=True).stdout
+        else: run(f'youtube-dl --prefer-ffmpeg --extract-audio --audio-format mp3 {self.link}',
+                 shell=True, capture_output=True, text=True).stdout
+              
     def pressed(self):
         self.progress.start()
         def callback():
-            try:
-                self.urll = self.url_entry.get()
-                self.dir = str(self.path_entry.get())        
-                self.title = ''.join(filter((string.ascii_letters + string.digits + "-_ ][)(&!?><+").__contains__,
-                                             pytube.YouTube(self.urll).title))
-                print(self.title)
-            except:
+            self.url = self.url_entry.get()
+            self.dir = str(self.path_entry.get())
+
+            if self.url != None and (self.url.startswith('http') or self.url.startswith('www')):
+                
+                try:
+                    self.down_button['state'] = 'disabled'
+                    self.download(self.url, self.dir)
+                    self.progress.stop()
+                    messagebox.showinfo(title='Success', message='Download complete!')
+                    self.down_button['state'] = 'normal'
+                except:
+                    self.progress.stop()
+                    messagebox.showerror(title='Server Error', message='\n    please try again    \n')
+            else: 
                 self.progress.stop()
-                messagebox.showerror(title='Error', message='Broken link provided')
-            try:
-                self.download(self.urll, self.dir)
-                self.convert(f"{self.title}.mp4",f"{self.title}.mp3", self.dir)
-                self.progress.stop()
-                messagebox.showinfo(title='Success', message=f'Download complete!\n{self.title}.mp3')
-            except:
-                self.progress.stop()
-                messagebox.showerror(title='Server Error', message='\n    please try again    \n')
-                if os.path.exists(os.path.join(self.pathh, self.inname)):
-                    os.remove(os.path.join(self.dir, self.inname))
+                messagebox.showerror(title='Error', message='Bad url')
 
         self.t = threading.Thread(target=callback)
         self.t.start()
